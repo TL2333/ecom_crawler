@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from .base import CrawlEngine, CrawlReport
 from ..config import CrawlConfig
 from ..adapters.registry import AdapterRegistry
+from ..adapters.base import ProductInfo
 from ..utils.http import create_session, fetch_text
 from ..utils.parsing import normalize_url
 
@@ -37,7 +38,7 @@ class SimpleCrawlEngine(CrawlEngine):
 
     async def crawl(self) -> CrawlReport:
         cfg = self.config
-        discovered: Dict[str, List[str]] = defaultdict(list)
+        discovered: Dict[str, List[ProductInfo]] = defaultdict(list)
         visited: Set[str] = set()
 
         # Allowed domains: if not set, restrict each start URL to its own domain.
@@ -101,8 +102,15 @@ class SimpleCrawlEngine(CrawlEngine):
                         continue
 
                     # Record products per domain
-                    if parsed.product_urls:
-                        discovered[domain].extend(parsed.product_urls)
+                    products = list(parsed.products)
+                    if not products and parsed.product_urls:
+                        products = [ProductInfo(url=u) for u in parsed.product_urls]
+
+                    if cfg.keywords:
+                        products = [p for p in products if p.matches_keywords(cfg.keywords or [])]
+
+                    if products:
+                        discovered[domain].extend(products)
 
                     # Enqueue next links
                     next_depth = item.depth + 1
@@ -121,5 +129,11 @@ class SimpleCrawlEngine(CrawlEngine):
             await session.close()
 
         # De-duplicate product URLs per domain
-        deduped = {d: sorted(set(urls)) for d, urls in discovered.items()}
+        deduped: Dict[str, List[ProductInfo]] = {}
+        for domain, products in discovered.items():
+            seen: Dict[str, ProductInfo] = {}
+            for product in products:
+                if product.url not in seen:
+                    seen[product.url] = product
+            deduped[domain] = list(seen.values())
         return CrawlReport(discovered=deduped, visited_count=len(visited))

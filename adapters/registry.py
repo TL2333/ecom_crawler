@@ -5,6 +5,7 @@ from importlib import metadata
 
 from .base import SiteAdapter
 from .generic import GenericAdapter
+from .github import GitHubRepoAdapter
 
 
 class AdapterRegistry:
@@ -13,7 +14,7 @@ class AdapterRegistry:
     Supports built-ins, config-defined dotted classes, and entry-point plugins.
     """
     def __init__(self) -> None:
-        self._adapters: List[SiteAdapter] = [GenericAdapter()]
+        self._adapters: List[SiteAdapter] = [GenericAdapter(), GitHubRepoAdapter()]
 
     # ---- Introspection / Management ----
 

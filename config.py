@@ -30,6 +30,8 @@ class CrawlConfig:
     extra_adapters: List[str] = field(default_factory=list)
     # Where to write results
     output_path: str = "output/product_urls.json"
+    # Optional keyword filters used to keep products matching user intent (e.g. "headphone")
+    keywords: Optional[List[str]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -62,6 +64,7 @@ class CrawlConfig:
             exporter=_get("CRAWLER_EXPORTER", "export.json_exporter:JSONExporter"),
             extra_adapters=[a.strip() for a in _get("CRAWLER_EXTRA_ADAPTERS", "").split(",") if a.strip()],
             output_path=_get("CRAWLER_OUTPUT_PATH", "output/product_urls.json"),
+            keywords=[k.strip() for k in _get("CRAWLER_KEYWORDS", "").split(",") if k.strip()] or None,
         )
 
     @classmethod
