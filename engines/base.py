@@ -4,10 +4,12 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Set
 from abc import ABC, abstractmethod
 
+from ..adapters.base import ProductInfo
+
 
 @dataclass
 class CrawlReport:
-    discovered: Dict[str, List[str]] = field(default_factory=dict)  # domain -> product URLs
+    discovered: Dict[str, List[ProductInfo]] = field(default_factory=dict)  # domain -> product metadata
     visited_count: int = 0
 
 

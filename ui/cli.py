@@ -26,6 +26,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="Comma-separated dotted paths for additional adapters")
     p.add_argument("--output", type=str, default=None, help="Output file path")
     p.add_argument("--log-level", type=str, default=None, help="Log level (DEBUG, INFO, WARNING, ERROR)")
+    p.add_argument("--keywords", type=str, default=None,
+                   help="Comma-separated keywords to keep products relevant to your query (e.g. headphone,book)")
     p.add_argument("--serve", action="store_true", help="Run REST API server instead of CLI crawl")
     p.add_argument("--host", type=str, default="127.0.0.1", help="API host (when --serve)")
     p.add_argument("--port", type=int, default=8000, help="API port (when --serve)")
@@ -54,6 +56,8 @@ def _load_config(args: argparse.Namespace) -> CrawlConfig:
         cfg.extra_adapters = [a.strip() for a in args.extra_adapters.split(",") if a.strip()]
     if args.output:
         cfg.output_path = args.output
+    if args.keywords:
+        cfg.keywords = [k.strip() for k in args.keywords.split(",") if k.strip()] or None
 
     cfg.validate()
     return cfg
